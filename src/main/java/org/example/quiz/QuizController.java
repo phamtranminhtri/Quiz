@@ -14,7 +14,7 @@ import java.util.List;
 @RestController
 public class QuizController {
 
-    record QuizResult(boolean success, String feedback) {}
+    public record QuizResult(boolean success, String feedback) {}
 
     @GetMapping("/api/quiz")
     public ResponseEntity<Quiz> getQuiz() {
