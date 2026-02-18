@@ -1,18 +1,17 @@
 package org.example.quiz;
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 public class QuizController {
 
     public record QuizResult(boolean success, String feedback) {}
+    public record UserAnswer(Set<Integer> answer) {}
 
     private Map<Integer, Quiz> quizMap = new HashMap<>();
 
@@ -36,7 +35,7 @@ public class QuizController {
 //    }
 
     @PostMapping("/api/quizzes")
-    public ResponseEntity<Quiz> postQuizzes(@RequestBody Quiz quiz) {
+    public ResponseEntity<Quiz> postQuizzes(@Valid @RequestBody Quiz quiz) {
         quizMap.put(quiz.getId(), quiz);
         return new ResponseEntity<>(quiz, HttpStatus.OK);
     }
@@ -57,15 +56,18 @@ public class QuizController {
     }
 
     @PostMapping("/api/quizzes/{id}/solve")
-    public ResponseEntity<QuizResult> postQuizzesIdSolve(@PathVariable int id, @RequestParam int answer) {
+    public ResponseEntity<QuizResult> postQuizzesIdSolve(
+            @PathVariable int id,
+            @RequestBody UserAnswer userAnswer
+    ) {
         if (!quizMap.containsKey(id)) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
         Quiz quiz = quizMap.get(id);
-        int quizAnswer = quiz.getAnswer();
+        Set<Integer> quizAnswer = quiz.getAnswer();
         QuizResult result;
-        if (answer == quizAnswer) {
+        if (userAnswer.answer().equals(quizAnswer)) {
             result = new QuizResult(true, "Congratulations, you're right!");
         } else {
             result = new QuizResult(false, "Wrong answer! Please, try again.");
